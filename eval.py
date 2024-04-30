@@ -62,7 +62,6 @@ parser.add_argument('--save_scores', action='store_true')
 parser.add_argument('--flip', action='store_true')
 parser.add_argument('--size', default=480, type=int, 
             help='Resize the shorter side to this size. -1 to use original resolution. ')
-
 args = parser.parse_args()
 config = vars(args)
 config['enable_long_term'] = not config['disable_long_term']
