@@ -52,6 +52,11 @@ class Tracker:
         for root, dirs, files in os.walk(self.output_dir):
             for d in dirs:
                 shutil.rmtree(os.path.join(root,d))
+        
+        # annotations folder
+        os.mkdir(os.path.join(self.output_dir,'Annotations'))
+        # JPEGImages folder
+        os.mkdir(os.path.join(self.output_dir,'JPEGImages'))
 
     def show_mask(self, mask, random_color=False):
         if random_color:
@@ -133,15 +138,10 @@ class Tracker:
 
     def get_SAM_masks(self):
         for view in self.viewpoints:
-            folder_name = os.path.join(self.output_dir,os.path.dirname(view.filenames[0]))
-            
-            if not os.path.exists(folder_name):
-                os.makedirs(folder_name)
-            
-            annnotations_dir = os.path.join(folder_name,'Annotations')
+            annnotations_dir = os.path.join(self.output_dir,'Annotations',os.path.dirname(view.filenames[0]))
             if not os.path.exists(annnotations_dir):
                 os.makedirs(annnotations_dir)
-            img_dir = os.path.join(folder_name,'JPEGImages')
+            img_dir = os.path.join(self.output_dir,'JPEGImages',os.path.dirname(view.filenames[0]))
             if not os.path.exists(img_dir):
                 os.makedirs(img_dir)
             for i in range(len(view.filenames)):
