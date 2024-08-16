@@ -32,15 +32,17 @@ class Tracker:
         parser.add_argument('--json', type=str, default='data')
         parser.add_argument('--device',choices=['cpu','cuda'], default='cuda')
         parser.add_argument('--annotate_scale',type=float,default=0.25)
-        parser.add_argument('--output_dir', type=str, default='output')
+        parser.add_argument('--output_dir', type=str, default=None)
         parser.add_argument('--checkpoint', type=str, default='sam_ckpts/sam_vit_l_0b3195.pth')
         parser.add_argument('--annotate',default=None,nargs='+',type=float)
         parser.add_argument('--n_points', type=int, default=5)
 
         self.args = parser.parse_args()
         self.device = torch.device(self.args.device)
-        self.output_dir = self.args.output_dir
         self.input_dir = os.path.dirname(self.args.json)
+        self.output_dir = self.args.output_dir
+        if self.output_dir is None:
+            self.output_dir = os.path.join(self.input_dir,'masks')
         self.annotate_npy = os.path.join(self.output_dir,os.path.basename(self.args.json).replace('.json','_annotate.npy'))
         #if os.path.exists(self.output_dir):
             #shutil.rmtree(self.output_dir)
@@ -69,6 +71,12 @@ class Tracker:
 
     def load_SAM(self):
         sam_checkpoint = self.args.checkpoint # the checkpoint loaded in the setup section.
+        # if script is run from the root directory, the path to the checkpoint is correct. 
+        # if script is run from the deformgs directory, the path to the checkpoint is incorrect. 
+        # dirty fix:
+        if not os.path.exists(sam_checkpoint):
+            sam_checkpoint = os.path.join('XMem',sam_checkpoint)
+
         model_type = "vit_h"
         if "vit_b" in sam_checkpoint:
             model_type = "vit_b"
@@ -176,7 +184,10 @@ class Tracker:
             self.fig, self.ax = plt.subplots()
             for i in range(len(self.viewpoints)):
                 img = cv2.imread(os.path.join(self.input_dir,self.viewpoints[i].filenames[0]))
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                try:
+                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                except:
+                    breakpoint()
                 self.get_SAM_annotations(img)
                 self.viewpoints[i].annotation = self.SAM_points[-1]
         np.save(self.annotate_npy,self.viewpoints)

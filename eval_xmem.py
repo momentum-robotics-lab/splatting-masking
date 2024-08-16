@@ -67,8 +67,8 @@ config = vars(args)
 config['enable_long_term'] = not config['disable_long_term']
 
 if args.output is None:
-    args.output = f'../output/{args.dataset}_{args.split}'
-    print(f'Output path not provided. Defaulting to {args.output}')
+    assert args.generic_path is not None, 'Please specify --output or --generic_path'
+    args.output = args.generic_path
 
 """
 Data preparation
@@ -133,6 +133,9 @@ torch.autograd.set_grad_enabled(False)
 meta_loader = meta_dataset.get_datasets()
 
 # Load our checkpoint
+if not os.path.exists(args.model):
+    args.model =  os.path.join('XMem',args.model)
+
 network = XMem(config, args.model).cuda().eval()
 if args.model is not None:
     model_weights = torch.load(args.model)
